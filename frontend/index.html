@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SysPilot - Intelligent Linux Process & Scheduling Platform</title>
+  <meta name="description" content="A unified platform for real-time Linux process management, intelligent CPU scheduling recommendations, concurrent file services, and system resource optimization.">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/simulation_viz.css">
+  <link rel="stylesheet" href="css/custom_dropdown.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300f2fe'><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14h2v2h-2zm0-10h2v8h-2z'/></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+        </svg>
+      </div>
+      <div>
+        <h1>SysPilot</h1>
+        <span class="tagline">Linux Process &amp; Resource Optimization Platform</span>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" id="nav-tabs-container">
+      <button class="tab-btn active" id="btn-tab-monitor" data-tab="tab-monitor">
+        <span>🖥️</span> System Monitor
+      </button>
+      <button class="tab-btn" id="btn-tab-scheduler" data-tab="tab-scheduler">
+        <span>⏱️</span> CPU Scheduler
+      </button>
+      <button class="tab-btn" id="btn-tab-concurrency" data-tab="tab-concurrency">
+        <span>🔒</span> Concurrency &amp; Deadlock
+      </button>
+      <button class="tab-btn" id="btn-tab-files" data-tab="tab-files">
+        <span>📂</span> Concurrent File Hub
+      </button>
+      <button class="tab-btn" id="btn-tab-ml" data-tab="tab-ml">
+        <span>🧠</span> ML Analytics
+      </button>
+    </nav>
+
+    <!-- Header Telemetry Status -->
+    <div class="header-status">
+      <div class="status-badge" title="Live WebSocket Telemetry">
+        <div class="status-dot" id="ws-indicator"></div>
+        <span id="ws-status-text">Connecting...</span>
+      </div>
+      <div class="status-badge">
+        <span>⏱️ Uptime:</span>
+        <span id="hdr-uptime" class="mono">00:00:00</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="main-content">
+
+    <!-- Global Telemetry Quickbar -->
+    <section class="quickbar-grid" id="quickbar-section">
+      <!-- CPU Metric Card -->
+      <div class="glass metric-card cpu-card">
+        <div class="metric-label">
+          <span>Aggregate CPU Load</span>
+          <span id="cpu-core-count" class="mono">-- Cores</span>
+        </div>
+        <div class="metric-value">
+          <span id="quick-cpu-val">0.0</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill cpu-fill" id="quick-cpu-bar" style="width: 0%;"></div>
+        </div>
+        <div class="metric-sub">
+          <span>Load Avg: <span id="quick-loadavg" class="mono">0.00, 0.00, 0.00</span></span>
+        </div>
+      </div>
+
+      <!-- Memory Metric Card -->
+      <div class="glass metric-card mem-card">
+        <div class="metric-label">
+          <span>Virtual Memory (RAM)</span>
+          <span id="quick-mem-used">0.0 / 0.0 GB</span>
+        </div>
+        <div class="metric-value">
+          <span id="quick-mem-val">0.0</span>
+          <span class="metric-unit">%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill mem-fill" id="quick-mem-bar" style="width: 0%;"></div>
+        </div>
+        <div class="metric-sub">
+          <span>Buffers/Cache: <span id="quick-mem-cached" class="mono">0 MB</span></span>
+          <span>Swap: <span id="quick-swap-val" class="mono">0.0%</span></span>
+        </div>
+      </div>
+
+      <!-- Disk I/O Card -->
+      <div class="glass metric-card disk-card">
+        <div class="metric-label">
+          <span>Disk Storage &amp; I/O</span>
+          <span id="quick-disk-space">0% Used</span>
+        </div>
+        <div class="metric-value">
+          <span id="quick-disk-val">0.0</span>
+          <span class="metric-unit">KB/s</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill disk-fill" id="quick-disk-bar" style="width: 0%;"></div>
+        </div>
+        <div class="metric-sub">
+          <span>Read: <span id="quick-disk-read" class="mono">0 KB/s</span></span>
+          <span>Write: <span id="quick-disk-write" class="mono">0 KB/s</span></span>
+        </div>
+      </div>
+
+      <!-- Network I/O Card -->
+      <div class="glass metric-card net-card">
+        <div class="metric-label">
+          <span>Network Bandwidth</span>
+          <span>Throughput</span>
+        </div>
+        <div class="metric-value">
+          <span id="quick-net-val">0.0</span>
+          <span class="metric-unit">KB/s</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill net-fill" id="quick-net-bar" style="width: 0%;"></div>
+        </div>
+        <div class="metric-sub">
+          <span>RX: <span id="quick-net-rx" class="mono">0 KB/s</span></span>
+          <span>TX: <span id="quick-net-tx" class="mono">0 KB/s</span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TAB 1: SYSTEM & PROCESS MONITOR                               -->
+    <!-- ============================================================= -->
+    <section class="tab-pane active" id="tab-monitor">
+      
+      <!-- Core Heatmaps & Process Actions -->
+      <div class="grid-2col" style="margin-bottom: 1.25rem;">
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>🔥</span> Per-Core CPU Utilization Heatmap</h3>
+            <span class="badge badge-running mono" id="total-procs-badge">Active Procs: --</span>
+          </div>
+          <div class="card-body">
+            <div class="core-grid" id="cpu-core-grid">
+              <!-- Dynamically populated core cells -->
+            </div>
+          </div>
+        </div>
+
+        <!-- OS Process Controls & Inspectors -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>🛡️</span> Linux Kernel Inspectors</h3>
+          </div>
+          <div class="card-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+              Inspect live <span class="mono">/proc</span> structures, traverse the parent-child process tree, or scan for defunct zombie and orphan processes.
+            </p>
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button class="btn btn-secondary" id="btn-open-tree">
+                <span>🌲</span> Process Hierarchy Tree
+              </button>
+              <button class="btn btn-secondary" id="btn-scan-zombies">
+                <span>🧟</span> Zombie / Orphan Scanner
+              </button>
+              <button class="btn btn-secondary" id="btn-raw-proc">
+                <span>📜</span> View /proc/meminfo &amp; stat
+              </button>
+            </div>
+            <div id="zombie-alert-box" style="display: none; padding: 0.75rem; background: rgba(255, 23, 68, 0.1); border: 1px solid rgba(255, 23, 68, 0.3); border-radius: var(--radius-sm); font-size: 0.82rem;">
+              <strong>Alert:</strong> <span id="zombie-alert-text"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Process Table -->
+      <div class="glass">
+        <div class="card-header">
+          <h3 class="card-title"><span>📋</span> Active Processes Table</h3>
+          <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <input type="text" id="proc-search-input" class="form-control" placeholder="Search PID or Name..." style="width: 200px;">
+            <select id="proc-sort-select" class="form-select" data-custom-dropdown>
+              <option value="cpu_percent">Sort: CPU %</option>
+              <option value="memory_percent">Sort: Memory %</option>
+              <option value="pid">Sort: PID</option>
+              <option value="name">Sort: Name</option>
+              <option value="nice">Sort: Priority / Nice</option>
+            </select>
+            <button class="btn btn-primary btn-sm" id="btn-refresh-procs">Refresh</button>
+          </div>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="custom-table" id="process-table">
+              <thead>
+                <tr>
+                  <th>PID</th>
+                  <th>PPID</th>
+                  <th>Process Name</th>
+                  <th>User</th>
+                  <th>Status</th>
+                  <th>CPU %</th>
+                  <th>RAM %</th>
+                  <th>RSS Memory</th>
+                  <th>Nice</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="process-table-body">
+                <tr><td colspan="10" style="text-align: center; color: var(--text-muted);">Loading system processes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TAB 2: CPU SCHEDULING STUDIO & AI RECOMMENDER                 -->
+    <!-- ============================================================= -->
+    <section class="tab-pane" id="tab-scheduler">
+      <div class="grid-2col">
+        
+        <!-- Left: Workload Configurator -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>⚙️</span> Workload Definition &amp; Parameters</h3>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+              <select id="workload-preset-select" class="form-select" data-custom-dropdown style="min-width: 200px; flex: 1;">
+                <option value="standard">Preset: Standard Textbook</option>
+                <option value="high_variance">Preset: High Burst Variance (SRTF optimal)</option>
+                <option value="interactive">Preset: Interactive Timesharing (RR optimal)</option>
+                <option value="priority_heavy">Preset: Priority Urgency (Aging optimal)</option>
+                <option value="convoy">Preset: Convoy Effect (FCFS worst-case)</option>
+              </select>
+              <button class="btn btn-secondary btn-sm" id="btn-add-proc-row">+ Process</button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive" style="max-height: 250px;">
+              <table class="custom-table" id="scheduler-input-table">
+                <thead>
+                  <tr>
+                    <th>PID</th>
+                    <th>Name</th>
+                    <th>Arrival (AT)</th>
+                    <th>Burst (BT)</th>
+                    <th>Priority</th>
+                    <th>Del</th>
+                  </tr>
+                </thead>
+                <tbody id="scheduler-proc-rows">
+                  <!-- Dynamic Process Rows -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Algorithm Selection & Hyperparameters -->
+            <div style="margin-top: 1.25rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; align-items: end;">
+              <div style="grid-column: 1 / -1;">
+                <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Target Algorithm</label>
+                <select id="selected-algorithm" class="form-select" data-custom-dropdown>
+                  <option value="fcfs">First-Come, First-Served (FCFS)</option>
+                  <option value="sjf">Shortest Job First (SJF - Non-Preemptive)</option>
+                  <option value="srtf">Shortest Remaining Time First (SRTF - Preemptive)</option>
+                  <option value="priority_np">Priority (Non-Preemptive)</option>
+                  <option value="priority_preemptive">Priority (Preemptive with Aging)</option>
+                  <option value="round_robin" selected>Round Robin (RR)</option>
+                  <option value="mlfq">Multi-Level Feedback Queue (MLFQ)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">Time Quantum (Δt)</label>
+                <input type="number" id="quantum-input" class="form-control" value="2" min="1" max="20">
+              </div>
+
+              <div>
+                <label style="font-size: 0.78rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;">MLFQ Boost Interval</label>
+                <input type="number" id="mlfq-boost-input" class="form-control" value="20" min="5" max="100">
+              </div>
+            </div>
+
+            <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+              <button class="btn btn-primary" id="btn-run-simulation">
+                <span>▶️</span> Start Simulation
+              </button>
+              <button class="btn btn-secondary" id="btn-sim-pause">
+                <span>⏸️</span> Pause
+              </button>
+              <button class="btn btn-secondary" id="btn-sim-play" disabled>
+                <span>▶️</span> Resume
+              </button>
+              <button class="btn btn-secondary" id="btn-sim-reset">
+                <span>🔄</span> Reset
+              </button>
+              <select id="sim-speed-select" class="form-select" data-custom-dropdown style="min-width: 100px; max-width: 120px;">
+                <option value="0.5">Speed: 0.5x</option>
+                <option value="1" selected>Speed: 1x</option>
+                <option value="2">Speed: 2x</option>
+                <option value="5">Speed: 5x</option>
+                <option value="10">Speed: 10x</option>
+              </select>
+              <button class="btn btn-secondary" id="btn-compare-all">
+                <span>📊</span> Compare All
+              </button>
+              <button class="btn btn-secondary" id="btn-ai-recommend">
+                <span>🤖</span> AI Recommend
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Recommendation Card -->
+        <div class="ai-card" id="ai-recommender-container">
+          <div class="ai-badge">
+            <span>✨</span> Intelligent OS Scheduling Recommender
+          </div>
+          <h3 id="rec-algo-title" style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: #fff;">
+            Run recommendation to evaluate workload
+          </h3>
+          <p id="rec-algo-summary" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+            Click <strong>"AI Recommendation Engine"</strong> to automatically analyze burst time variance, arrival skew, and urgency distribution to mathematically determine the optimal CPU scheduler.
+          </p>
+          <div id="rec-metrics-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+            <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Avg Waiting Time</div>
+              <div id="rec-avg-wt" class="mono" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan);">--</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Avg Turnaround</div>
+              <div id="rec-avg-tat" class="mono" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-purple);">--</div>
+            </div>
+            <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+              <div style="font-size: 0.7rem; color: var(--text-muted);">Context Switches</div>
+              <div id="rec-cs-count" class="mono" style="font-size: 1.1rem; font-weight: 700; color: var(--accent-amber);">--</div>
+            </div>
+          </div>
+          <div id="rec-justification-list" style="font-size: 0.82rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.4rem;">
+            <!-- Bullet points -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-Time Process Visualization -->
+      <div class="glass" style="margin-top: 1.25rem;">
+        <div class="card-header">
+          <h3 class="card-title"><span>🖥️</span> Real-Time Process Execution</h3>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 1.25rem; margin-bottom: 1.25rem;">
+            <!-- CPU Visualization -->
+            <div id="cpu-viz-container">
+              <div class="cpu-core idle">
+                <div class="cpu-header">CPU CORE</div>
+                <div class="cpu-status">IDLE</div>
+                <div class="cpu-detail">No process executing</div>
+              </div>
+            </div>
+
+            <!-- Ready Queue -->
+            <div id="ready-queue-viz">
+              <div class="ready-queue-header">READY QUEUE</div>
+              <div class="ready-queue-empty">Queue is empty</div>
+            </div>
+          </div>
+
+          <!-- Process States -->
+          <div style="margin-top: 1rem;">
+            <h4 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Process States</h4>
+            <div id="process-states-viz">
+              <div style="color: var(--text-muted); font-size: 0.85rem;">No processes yet</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Gantt Chart Timeline -->
+      <div class="glass" style="margin-top: 1.25rem;">
+        <div class="card-header">
+          <h3 class="card-title"><span>📈</span> Live Gantt Execution Timeline</h3>
+          <span id="gantt-makespan-badge" class="badge badge-sleeping mono">Makespan: -- time units</span>
+        </div>
+        <div class="card-body">
+          <div class="gantt-container">
+            <div class="gantt-timeline" id="gantt-timeline-bar">
+              <div style="width: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.85rem;">
+                Click "Start Simulation" to begin real-time visualization
+              </div>
+            </div>
+            <div class="gantt-ticks" id="gantt-ticks-bar"><span>0</span></div>
+          </div>
+
+          <!-- Event Log -->
+          <div style="margin-top: 1.25rem;">
+            <h4 style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">Event Timeline Log</h4>
+            <div id="event-log-container" style="max-height: 200px; overflow-y: auto; background: rgba(0,0,0,0.3); padding: 0.75rem; border-radius: var(--radius-sm); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.6;">
+              <div style="color: var(--text-muted);">Events will appear during simulation...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparative Leaderboard Table (When Compare All is clicked) -->
+      <div class="glass" id="comparison-card" style="margin-top: 1.25rem; display: none;">
+        <div class="card-header">
+          <h3 class="card-title"><span>🏆</span> Comparative Algorithm Performance Benchmark</h3>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="custom-table" id="comparison-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Algorithm</th>
+                  <th>Avg Waiting Time (WT)</th>
+                  <th>Avg Turnaround Time (TAT)</th>
+                  <th>Avg Response Time (RT)</th>
+                  <th>Context Switches</th>
+                  <th>CPU Utilization</th>
+                  <th>Throughput</th>
+                </tr>
+              </thead>
+              <tbody id="comparison-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TAB 3: CONCURRENCY, DEADLOCK & IPC LAB                        -->
+    <!-- ============================================================= -->
+    <section class="tab-pane" id="tab-concurrency">
+      
+      <!-- Dijkstra's Banker's Algorithm -->
+      <div class="glass" style="margin-bottom: 1.25rem;">
+        <div class="card-header">
+          <h3 class="card-title"><span>🛡️</span> Dijkstra's Banker's Algorithm: Deadlock Avoidance</h3>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-secondary btn-sm" id="btn-load-bankers-safe">Preset: Safe State</button>
+            <button class="btn btn-secondary btn-sm" id="btn-load-bankers-unsafe">Preset: Unsafe (Deadlock)</button>
+            <button class="btn btn-primary btn-sm" id="btn-run-bankers">Compute Safety &amp; Sequence</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="matrix-grid">
+            
+            <!-- Available Vector -->
+            <div class="matrix-card">
+              <h4>Available Vector [A, B, C]</h4>
+              <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem; flex-wrap: wrap;" id="bankers-available-inputs">
+                <input type="number" class="form-control mono" id="avail-0" value="3" min="0" style="width: 70px; flex-shrink: 0;">
+                <input type="number" class="form-control mono" id="avail-1" value="3" min="0" style="width: 70px; flex-shrink: 0;">
+                <input type="number" class="form-control mono" id="avail-2" value="2" min="0" style="width: 70px; flex-shrink: 0;">
+              </div>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">Current unallocated instances for resources R0, R1, R2.</p>
+            </div>
+
+            <!-- Allocation Matrix -->
+            <div class="matrix-card">
+              <h4>Allocation Matrix [N × M]</h4>
+              <table class="custom-table matrix-input-table" id="bankers-alloc-table">
+                <tbody>
+                  <!-- 5 rows of 3 inputs -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Max Matrix -->
+            <div class="matrix-card">
+              <h4>Maximum Claim Matrix [N × M]</h4>
+              <table class="custom-table matrix-input-table" id="bankers-max-table">
+                <tbody>
+                  <!-- 5 rows of 3 inputs -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Result Safe Sequence Card -->
+            <div class="matrix-card" style="display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <h4>Safety Diagnosis &amp; Sequence</h4>
+                <div id="bankers-status-badge" class="badge badge-sleeping" style="font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-bottom: 0.75rem;">
+                  Status: Ready
+                </div>
+                <div id="bankers-sequence-text" class="mono" style="font-size: 1.15rem; font-weight: 700; color: var(--accent-cyan); word-break: break-all;">
+                  --
+                </div>
+              </div>
+              <div id="bankers-steps-log" style="max-height: 120px; overflow-y: auto; font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                <!-- Step trace -->
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Synchronization Simulators (Bounded Buffer & Readers-Writers) -->
+      <div class="grid-equal-2col" style="margin-bottom: 1.25rem;">
+        
+        <!-- Bounded Buffer Producer-Consumer -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>🔄</span> Bounded Buffer (Producer-Consumer)</h3>
+            <button class="btn btn-primary btn-sm" id="btn-run-producer-consumer">Run Sync Test</button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Demonstrates semaphore mutual exclusion (<span class="mono">mutex</span>) and resource coordination (<span class="mono">empty</span>, <span class="mono">full</span>).
+            </p>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;" id="buffer-slot-display">
+              <!-- Buffer slots animated -->
+            </div>
+            <div class="metric-sub" style="margin-bottom: 0.75rem;">
+              <span>Produced: <strong id="pc-produced-count" class="mono">0</strong></span>
+              <span>Consumed: <strong id="pc-consumed-count" class="mono">0</strong></span>
+            </div>
+            <div id="pc-events-log" style="max-height: 140px; overflow-y: auto; font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: var(--radius-sm);">
+              Logs will stream during synchronization...
+            </div>
+          </div>
+        </div>
+
+        <!-- Readers-Writers Problem -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>📖</span> Readers-Writers Concurrency</h3>
+            <button class="btn btn-primary btn-sm" id="btn-run-rw-test">Run RW Test</button>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Demonstrates shared concurrent reading with exclusive writer mutual exclusion and writer starvation avoidance.
+            </p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+              <div style="background: rgba(0,0,0,0.25); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Active Readers</div>
+                <div id="rw-active-readers" class="mono" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-cyan);">0</div>
+              </div>
+              <div style="background: rgba(0,0,0,0.25); padding: 0.75rem; border-radius: var(--radius-sm); text-align: center;">
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Active Writers (Max 1)</div>
+                <div id="rw-active-writers" class="mono" style="font-size: 1.5rem; font-weight: 700; color: var(--accent-rose);">0</div>
+              </div>
+            </div>
+            <div id="rw-events-log" style="max-height: 140px; overflow-y: auto; font-size: 0.76rem; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.3); padding: 0.6rem; border-radius: var(--radius-sm);">
+              Click "Run RW Test" to trigger concurrent access.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- IPC Mechanisms Benchmark -->
+      <div class="glass">
+        <div class="card-header">
+          <h3 class="card-title"><span>⚡</span> Inter-Process Communication (IPC) Benchmark</h3>
+          <button class="btn btn-secondary btn-sm" id="btn-run-ipc-bench">Execute IPC Benchmark</button>
+        </div>
+        <div class="card-body" style="padding: 0;">
+          <div class="table-responsive">
+            <table class="custom-table" id="ipc-results-table">
+              <thead>
+                <tr>
+                  <th>Payload Size</th>
+                  <th>Shared Memory Latency (μs)</th>
+                  <th>Shared Memory Throughput (MB/s)</th>
+                  <th>OS Pipe Latency (μs)</th>
+                  <th>OS Pipe Throughput (MB/s)</th>
+                  <th>Message Queue Latency (μs)</th>
+                  <th>Message Queue Throughput (MB/s)</th>
+                </tr>
+              </thead>
+              <tbody id="ipc-table-body">
+                <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">Click "Execute IPC Benchmark" to evaluate channels.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TAB 4: MULTI-CLIENT CONCURRENT FILE SERVICE                   -->
+    <!-- ============================================================= -->
+    <section class="tab-pane" id="tab-files">
+      
+      <!-- File Hub Overview & LRU Cache -->
+      <div class="grid-2col" style="margin-bottom: 1.25rem;">
+        
+        <!-- Left: OS Page Cache Simulator -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>💾</span> Simulated OS Buffer &amp; Page Cache (LRU)</h3>
+            <span id="cache-hit-ratio-badge" class="badge badge-running mono">Hit Ratio: 0%</span>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; margin-bottom: 1.25rem;">
+              <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Capacity</div>
+                <div id="cache-capacity-val" class="mono" style="font-weight: 700; color: var(--text-primary);">8 Pages</div>
+              </div>
+              <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Hits</div>
+                <div id="cache-hits-val" class="mono" style="font-weight: 700; color: var(--accent-emerald);">0</div>
+              </div>
+              <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Misses</div>
+                <div id="cache-misses-val" class="mono" style="font-weight: 700; color: var(--accent-rose);">0</div>
+              </div>
+              <div style="background: rgba(0,0,0,0.25); padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; min-width: 0;">
+                <div style="font-size: 0.7rem; color: var(--text-muted);">Evictions</div>
+                <div id="cache-evictions-val" class="mono" style="font-weight: 700; color: var(--accent-amber);">0</div>
+              </div>
+            </div>
+
+            <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem;">Cached Pages in Memory (MRU -> LRU)</h4>
+            <div class="table-responsive" style="max-height: 160px;">
+              <table class="custom-table" id="cached-pages-table">
+                <thead>
+                  <tr>
+                    <th>Filename</th>
+                    <th>Dirty Bit</th>
+                    <th>Size</th>
+                    <th>Last Access</th>
+                  </tr>
+                </thead>
+                <tbody id="cached-pages-body">
+                  <tr><td colspan="4" style="text-align: center; color: var(--text-muted);">Cache empty.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Multi-Client Stress Test Trigger -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>🚀</span> Multi-Client Stress Test Generator</h3>
+          </div>
+          <div class="card-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+            <p style="font-size: 0.82rem; color: var(--text-secondary);">
+              Simulate multiple concurrent worker threads performing simultaneous reads, writes, and appends to validate Reader-Writer locking and LRU cache hits.
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+              <div>
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Concurrent Clients</label>
+                <input type="number" id="stress-clients-input" class="form-control" value="6" min="2" max="20">
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Ops Per Client</label>
+                <input type="number" id="stress-ops-input" class="form-control" value="8" min="2" max="30">
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-launch-stress-test" style="margin-top: 0.5rem;">
+              <span>⚡</span> Launch Concurrent Stress Test
+            </button>
+            <div id="stress-test-result-box" style="display: none; padding: 0.75rem; background: rgba(0, 242, 254, 0.08); border: 1px solid var(--border-glow); border-radius: var(--radius-sm); font-size: 0.82rem;">
+              <!-- Stress result summary -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Real-Time Client Activity Stream & File Explorer -->
+      <div class="grid-2col">
+        
+        <!-- Live Operations Activity Stream -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>📡</span> Real-Time Client Request Stream</h3>
+            <button class="btn btn-secondary btn-sm" id="btn-refresh-file-status">Refresh Log</button>
+          </div>
+          <div class="card-body" style="padding: 0;">
+            <div class="table-responsive" style="max-height: 280px;">
+              <table class="custom-table" id="file-activity-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Client ID</th>
+                    <th>Operation</th>
+                    <th>Target File</th>
+                    <th>Latency</th>
+                    <th>Details</th>
+                  </tr>
+                </thead>
+                <tbody id="file-activity-body">
+                  <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Waiting for client requests...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive File Operations Console -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>✍️</span> Client File Operation Console</h3>
+          </div>
+          <div class="card-body" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+              <input type="text" id="manual-client-id" class="form-control" value="Client_User" placeholder="Client ID">
+              <input type="text" id="manual-filename" class="form-control" value="test_kernel.txt" placeholder="Filename">
+            </div>
+            <textarea id="manual-file-content" class="form-control mono" rows="3" placeholder="File content payload..."></textarea>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" id="btn-manual-read">Shared Read</button>
+              <button class="btn btn-primary btn-sm" id="btn-manual-write">Exclusive Write</button>
+              <button class="btn btn-secondary btn-sm" id="btn-manual-append">Append</button>
+            </div>
+            <div id="manual-op-result" style="font-size: 0.8rem; font-family: 'JetBrains Mono', monospace; color: var(--accent-cyan); background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: var(--radius-sm); min-height: 40px;">
+              Ready for client operation.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TAB 5: MACHINE LEARNING RESOURCE PREDICTIONS & ANOMALIES      -->
+    <!-- ============================================================= -->
+    <section class="tab-pane" id="tab-ml">
+      
+      <!-- Future Resource Forecast Cards -->
+      <div class="grid-3col" style="margin-bottom: 1.25rem;">
+        
+        <!-- Horizon +10s -->
+        <div class="glass metric-card" style="border-top: 4px solid var(--accent-cyan);">
+          <div class="metric-label">
+            <span>Forecast Horizon: +10s</span>
+            <span class="badge badge-running">Short-Term</span>
+          </div>
+          <div style="margin-top: 0.85rem; display: flex; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted CPU</div>
+              <div id="forecast-cpu-10" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-cyan);">0.0%</div>
+            </div>
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted Memory</div>
+              <div id="forecast-mem-10" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-purple);">0.0%</div>
+            </div>
+          </div>
+          <div class="metric-sub" style="margin-top: 0.75rem;">
+            <span>CPU Delta: <strong id="delta-cpu-10" class="mono">--</strong></span>
+            <span>RAM Delta: <strong id="delta-mem-10" class="mono">--</strong></span>
+          </div>
+        </div>
+
+        <!-- Horizon +30s -->
+        <div class="glass metric-card" style="border-top: 4px solid var(--accent-blue);">
+          <div class="metric-label">
+            <span>Forecast Horizon: +30s</span>
+            <span class="badge badge-sleeping">Mid-Term</span>
+          </div>
+          <div style="margin-top: 0.85rem; display: flex; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted CPU</div>
+              <div id="forecast-cpu-30" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-blue);">0.0%</div>
+            </div>
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted Memory</div>
+              <div id="forecast-mem-30" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-purple);">0.0%</div>
+            </div>
+          </div>
+          <div class="metric-sub" style="margin-top: 0.75rem;">
+            <span>CPU Delta: <strong id="delta-cpu-30" class="mono">--</strong></span>
+            <span>RAM Delta: <strong id="delta-mem-30" class="mono">--</strong></span>
+          </div>
+        </div>
+
+        <!-- Horizon +60s -->
+        <div class="glass metric-card" style="border-top: 4px solid var(--accent-purple);">
+          <div class="metric-label">
+            <span>Forecast Horizon: +60s</span>
+            <span class="badge badge-stopped">Long-Term</span>
+          </div>
+          <div style="margin-top: 0.85rem; display: flex; justify-content: space-between;">
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted CPU</div>
+              <div id="forecast-cpu-60" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-purple);">0.0%</div>
+            </div>
+            <div>
+              <div style="font-size: 0.72rem; color: var(--text-muted);">Predicted Memory</div>
+              <div id="forecast-mem-60" class="mono" style="font-size: 1.6rem; font-weight: 700; color: var(--accent-purple);">0.0%</div>
+            </div>
+          </div>
+          <div class="metric-sub" style="margin-top: 0.75rem;">
+            <span>CPU Delta: <strong id="delta-cpu-60" class="mono">--</strong></span>
+            <span>RAM Delta: <strong id="delta-mem-60" class="mono">--</strong></span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ML Model Details & Anomaly Alert Center -->
+      <div class="grid-2col">
+        
+        <!-- Left: ML Confidence & Trend Slopes -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>📈</span> Online Model Confidence &amp; Trend Analysis</h3>
+            <span class="badge badge-running">Ridge Polynomial</span>
+          </div>
+          <div class="card-body">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+              <div style="background: rgba(0,0,0,0.25); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 0.72rem; color: var(--text-muted);">CPU Trend Direction</div>
+                <div id="ml-cpu-trend" class="mono" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-cyan);">Stable</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                  Slope: <span id="ml-cpu-slope" class="mono">0.0</span> %/s
+                </div>
+              </div>
+              <div style="background: rgba(0,0,0,0.25); padding: 0.75rem; border-radius: var(--radius-sm);">
+                <div style="font-size: 0.72rem; color: var(--text-muted);">Memory Trend Direction</div>
+                <div id="ml-mem-trend" class="mono" style="font-size: 1.2rem; font-weight: 700; color: var(--accent-purple);">Stable</div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.25rem;">
+                  Slope: <span id="ml-mem-slope" class="mono">0.0</span> %/s
+                </div>
+              </div>
+            </div>
+
+            <div class="metric-sub" style="margin-top: 1rem;">
+              <span>CPU Fit Confidence (R²): <strong id="ml-r2-cpu" class="mono">0.00</strong></span>
+              <span>Memory Fit Confidence (R²): <strong id="ml-r2-mem" class="mono">0.00</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Memory Leak & Anomaly Center -->
+        <div class="glass">
+          <div class="card-header">
+            <h3 class="card-title"><span>⚠️</span> Memory Leak &amp; CPU Spike Anomaly Center</h3>
+            <span id="anomaly-status-badge" class="badge badge-running">NORMAL</span>
+          </div>
+          <div class="card-body">
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
+              Monitors Resident Set Size growth rate (<span class="mono">dRSS/dt > 0</span>) and flags runaway processes before the Linux kernel invokes the OOM killer.
+            </p>
+
+            <div id="anomaly-alerts-container" style="min-height: 80px; display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem;">
+              <div style="font-size: 0.8rem; color: var(--text-muted);">No anomalies currently detected. System running within normal parameters.</div>
+            </div>
+
+            <div style="border-top: 1px solid var(--border-color); padding-top: 0.85rem; display: flex; gap: 0.75rem;">
+              <button class="btn btn-secondary btn-sm" id="btn-sim-leak">
+                <span>🧪</span> Simulate Memory Leak (15s)
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-sim-cpu-hog">
+                <span>🧪</span> Simulate CPU Spike (15s)
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============================================================= -->
+  <!-- MODALS                                                        -->
+  <!-- ============================================================= -->
+
+  <!-- Process Tree Modal -->
+  <div class="modal-backdrop" id="modal-process-tree">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="card-title"><span>🌲</span> Linux Process Hierarchy Tree</h3>
+        <button class="close-btn" data-close="modal-process-tree">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
+          Traversing <span class="mono">PPID &rarr; PID</span> parent-child linkages in the process table.
+        </p>
+        <div id="tree-container" style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; line-height: 1.6; color: var(--text-primary); max-height: 50vh; overflow-y: auto;">
+          Loading hierarchy...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal / Renice Action Modal -->
+  <div class="modal-backdrop" id="modal-process-action">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="card-title"><span>⚡</span> Process Signal &amp; Priority Controller</h3>
+        <button class="close-btn" data-close="modal-process-action">&times;</button>
+      </div>
+      <div class="modal-body" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div>
+          <strong id="modal-proc-name">Process: --</strong> (<span id="modal-proc-pid" class="mono">PID: --</span>)
+        </div>
+        
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Send POSIX Signal</label>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="btn btn-secondary btn-sm" data-sig="SIGSTOP">SIGSTOP (Pause)</button>
+            <button class="btn btn-secondary btn-sm" data-sig="SIGCONT">SIGCONT (Resume)</button>
+            <button class="btn btn-secondary btn-sm" data-sig="SIGTERM">SIGTERM (15)</button>
+            <button class="btn btn-danger btn-sm" data-sig="SIGKILL">SIGKILL (9)</button>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">Adjust Nice Value (-20 to 19)</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="modal-nice-input" class="form-control mono" value="0" min="-20" max="19" style="width: 80px;">
+            <button class="btn btn-primary btn-sm" id="btn-apply-renice">Apply Renice</button>
+          </div>
+          <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Lower nice = higher scheduling priority.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Raw Proc Viewer Modal -->
+  <div class="modal-backdrop" id="modal-raw-proc">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 class="card-title"><span>📜</span> Raw Linux Kernel /proc Metrics</h3>
+        <button class="close-btn" data-close="modal-raw-proc">&times;</button>
+      </div>
+      <div class="modal-body">
+        <pre id="raw-proc-content" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: rgba(0,0,0,0.4); padding: 1rem; border-radius: var(--radius-sm); max-height: 60vh; overflow: auto; color: var(--accent-cyan);"></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript Modules -->
+  <script src="js/websocket.js"></script>
+  <script src="js/custom_dropdown.js"></script>
+  <script src="js/simulation_controller.js"></script>
+  <script src="js/live_gantt.js"></script>
+  <script src="js/process_state_visualizer.js"></script>
+  <script src="js/process_view.js"></script>
+  <script src="js/scheduler_view.js"></script>
+  <script src="js/concurrency_view.js"></script>
+  <script src="js/file_service_view.js"></script>
+  <script src="js/ml_view.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

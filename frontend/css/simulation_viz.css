@@ -1,0 +1,197 @@
+/* Additional CSS for Real-Time Simulation Visualization */
+
+/* CPU Visualization */
+.cpu-core {
+  background: rgba(18, 26, 43, 0.85);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.cpu-core.idle {
+  border-color: var(--border-color);
+}
+
+.cpu-core.running {
+  border-color: var(--accent-emerald);
+  box-shadow: 0 0 20px rgba(0, 230, 118, 0.2);
+}
+
+.cpu-header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.cpu-status {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin: 0.5rem 0;
+}
+
+.cpu-core.idle .cpu-status {
+  color: var(--text-secondary);
+}
+
+.cpu-core.running .cpu-status {
+  color: var(--accent-emerald);
+}
+
+.cpu-process {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin: 0.75rem 0;
+}
+
+.cpu-detail {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+/* Ready Queue Visualization */
+.ready-queue-header {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+}
+
+.ready-queue-items {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.ready-queue-item {
+  background: rgba(0, 242, 254, 0.1);
+  border: 2px solid var(--accent-cyan);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1.25rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ready-queue-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.3);
+}
+
+.rq-pid {
+  font-size: 1.1rem;
+  color: var(--accent-cyan);
+}
+
+.rq-arrow {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+
+.ready-queue-empty {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  padding: 1rem;
+  text-align: center;
+  background: rgba(0,0,0,0.2);
+  border-radius: var(--radius-sm);
+}
+
+/* Process States Grid */
+.process-states-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.process-state-card {
+  background: rgba(18, 26, 43, 0.85);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.process-state-card.state-new {
+  border-color: var(--text-muted);
+}
+
+.process-state-card.state-ready {
+  border-color: var(--accent-cyan);
+  background: rgba(0, 242, 254, 0.05);
+}
+
+.process-state-card.state-running {
+  border-color: var(--accent-emerald);
+  background: rgba(0, 230, 118, 0.1);
+  box-shadow: 0 0 15px rgba(0, 230, 118, 0.2);
+}
+
+.process-state-card.state-terminated {
+  border-color: var(--border-color);
+  opacity: 0.6;
+}
+
+.ps-pid {
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  margin-bottom: 0.3rem;
+}
+
+.ps-state {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+/* Event Log */
+.event-log-item {
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.event-log-item:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: var(--accent-cyan);
+  font-weight: 600;
+  margin-right: 0.5rem;
+}
+
+.log-message {
+  color: var(--text-primary);
+}
+
+/* Live Gantt Chart Enhancements */
+.gantt-block.live {
+  border-right: 3px solid var(--accent-emerald);
+  animation: pulse-border 1s infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-right-color: var(--accent-emerald);
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.4);
+  }
+  50% {
+    border-right-color: var(--accent-cyan);
+    box-shadow: 0 0 20px rgba(0, 242, 254, 0.6);
+  }
+}
+
+.gantt-block .remaining {
+  display: block;
+  margin-top: 0.2rem;
+}

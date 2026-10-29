@@ -1,0 +1,195 @@
+# ============================================================
+# SysPilot - OS Course Project
+# Git Ignore Configuration
+# ============================================================
+
+# ------------------------------------------------------------
+# Python
+# ------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+
+# Python virtual environments
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Python packaging
+*.egg
+*.egg-info/
+dist/
+build/
+develop-eggs/
+.eggs/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+# Coverage / testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+.nox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+# ------------------------------------------------------------
+# Environment / Secrets
+# ------------------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# Local configuration
+*.local
+config.local.*
+secrets/
+secrets.*
+credentials/
+credentials.*
+
+# ------------------------------------------------------------
+# IDE / Editors
+# ------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*.sublime-workspace
+*.sublime-project
+
+# Claude / AI coding tool local settings
+.claude/settings.local.json
+
+# ------------------------------------------------------------
+# Operating System
+# ------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ------------------------------------------------------------
+# Logs
+# ------------------------------------------------------------
+*.log
+logs/
+log/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ------------------------------------------------------------
+# Node / Frontend
+# ------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Frontend build output
+frontend/dist/
+frontend/build/
+frontend/.cache/
+frontend/.vite/
+
+# ------------------------------------------------------------
+# Generated / Temporary Files
+# ------------------------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.orig
+
+tmp/
+temp/
+.cache/
+.cache-loader/
+
+# ------------------------------------------------------------
+# Database / Local Runtime Data
+# ------------------------------------------------------------
+*.db
+*.sqlite
+*.sqlite3
+
+# ------------------------------------------------------------
+# ML / Data Science
+# ------------------------------------------------------------
+*.pkl
+*.pickle
+*.joblib
+*.h5
+*.hdf5
+*.pt
+*.pth
+*.onnx
+
+# Local datasets
+data/
+datasets/
+*.csv
+*.parquet
+*.feather
+
+# ML experiment / cache directories
+mlruns/
+.mlflow/
+wandb/
+runs/
+checkpoints/
+
+# ------------------------------------------------------------
+# Generated Reports / Outputs
+# ------------------------------------------------------------
+reports/generated/
+output/
+outputs/
+generated/
+artifacts/
+
+# Test-generated files
+test_results/
+test_reports/
+
+# ------------------------------------------------------------
+# Jupyter
+# ------------------------------------------------------------
+.ipynb_checkpoints/
+
+# ------------------------------------------------------------
+# OS / Runtime generated files
+# ------------------------------------------------------------
+*.pid
+*.pid.lock
+*.seed
+
+# ------------------------------------------------------------
+# Project-specific runtime files
+# ------------------------------------------------------------
+runtime/
+runtime_data/
+uploads/
+downloads/
+
+# ------------------------------------------------------------
+# Keep important example/configuration files
+# ------------------------------------------------------------
+!.env.example
+!requirements.txt
+!README.md

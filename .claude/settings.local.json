@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(py|jsx?|tsx?|json|html|css\\)$\")",
+      "Bash(python *)",
+      "Bash(curl -s http://127.0.0.1:8000/api/system/metrics)",
+      "Bash(pip install *)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(curl -s http://127.0.0.1:8001/)",
+      "Bash(curl -s http://127.0.0.1:8001/health)",
+      "Bash(curl -s http://127.0.0.1:8001/static/js/custom_dropdown.js)",
+      "Bash(curl -s http://127.0.0.1:8001/js/custom_dropdown.js)",
+      "Bash(curl -s http://127.0.0.1:8001/css/custom_dropdown.css)"
+    ]
+  }
+}
